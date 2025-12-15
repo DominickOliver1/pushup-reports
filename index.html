@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pushup Reports</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Reports & Stats</h1>
+      <p class="sub">Read-only dashboard (Google Sheets → Live)</p>
+    </div>
+    <div class="actions">
+      <button id="refreshBtn" class="btn primary">🔄 Refresh Data</button>
+      <button id="installBtn" class="btn" style="display:none;">📲 Install</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <div class="card">
+        <div class="label">TOTAL WORKOUTS</div>
+        <div class="value" id="totalWorkouts">—</div>
+      </div>
+      <div class="card">
+        <div class="label">TOTAL REPS LOGGED</div>
+        <div class="value" id="totalReps">—</div>
+      </div>
+      <div class="card">
+        <div class="label">AVG. REPS (PER SESSION)</div>
+        <div class="value" id="avgPerSession">—</div>
+      </div>
+      <div class="card">
+        <div class="label">BEST SESSION</div>
+        <div class="valueSmall" id="bestSession">—</div>
+      </div>
+      <div class="card">
+        <div class="label">DAILY AVG. REPS</div>
+        <div class="value" id="dailyAvg">—</div>
+      </div>
+      <div class="card">
+        <div class="label">WEEKLY AVG. REPS</div>
+        <div class="value" id="weeklyAvg">—</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Personal Records</h2>
+      </div>
+      <div class="grid prGrid">
+        <div class="card mini">
+          <div class="label">BEST SET</div>
+          <div class="value" id="prBestSet">—</div>
+        </div>
+        <div class="card mini">
+          <div class="label">BEST DAY</div>
+          <div class="value" id="prBestDay">—</div>
+        </div>
+        <div class="card mini">
+          <div class="label">BEST WEEK</div>
+          <div class="value" id="prBestWeek">—</div>
+        </div>
+        <div class="card mini">
+          <div class="label">BEST MONTH</div>
+          <div class="value" id="prBestMonth">—</div>
+        </div>
+      </div>
+      <p class="hint">PRs update automatically based on your spreadsheet.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Weekly Volume Trend</h2>
+      </div>
+      <div class="chartWrap">
+        <canvas id="weeklyChart" width="800" height="260"></canvas>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Calendar</h2>
+        <div class="calActions">
+          <button class="btn" id="prevMonth">◀</button>
+          <button class="btn" id="todayBtn">Today</button>
+          <button class="btn" id="nextMonth">▶</button>
+        </div>
+      </div>
+      <div class="calTitle" id="calTitle">—</div>
+      <div class="calendar" id="calendar"></div>
+      <div class="dayDetails" id="dayDetails" style="display:none;"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Activity History</h2>
+        <div class="right">
+          <button id="csvBtn" class="btn primary">📥 Download CSV</button>
+        </div>
+      </div>
+      <div id="history" class="history"></div>
+    </section>
+
+    <footer class="foot">
+      <span id="status">Idle</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
