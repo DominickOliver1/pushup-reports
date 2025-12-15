@@ -168,8 +168,9 @@ function render(){
  const byDay={},byWeek={},byMonth={};
  data.forEach(r=>{
   byDay[r.date]=(byDay[r.date]||0)+r.reps;
-  const d=new Date(r.date);
-  const w=`${d.getFullYear()}-W${Math.ceil(d.getDate()/7)}`;
+  const d=new Date(r.date+"T00:00:00");
+  d.setDate(d.getDate()-(d.getDay()+6)%7);
+  const w=d.toISOString().slice(0,10);
   byWeek[w]=(byWeek[w]||0)+r.reps;
   const m=r.date.slice(0,7);
   byMonth[m]=(byMonth[m]||0)+r.reps;
@@ -179,31 +180,57 @@ function render(){
  document.getElementById("bestWeek").textContent=Math.max(...Object.values(byWeek));
  document.getElementById("bestMonth").textContent=Math.max(...Object.values(byMonth));
 
- drawTrend();
+ drawTrend(byWeek);
  drawCalendar(byDay);
  document.getElementById("status").textContent="Updated";
 }
 
-function drawTrend(){
- const c=document.getElementById("trend"),x=c.getContext("2d");
- x.clearRect(0,0,c.width,c.height);
- const weeks=Object.entries(data.reduce((m,r)=>{
-   const d=new Date(r.date);
-   const w=`${d.getFullYear()}-W${Math.ceil(d.getDate()/7)}`;
-   m[w]=(m[w]||0)+r.reps; return m;
- },{})).slice(-weeksWindow);
+function drawTrend(byWeek){
+ const canvas=document.getElementById("trend");
+ const ctx=canvas.getContext("2d");
+ ctx.clearRect(0,0,canvas.width,canvas.height);
 
- const vals=weeks.map(w=>w[1]);
- const max=Math.max(...vals,1);
- x.strokeStyle="#31d07c";
- x.lineWidth=3;
- x.beginPath();
+ const entries=Object.entries(byWeek)
+   .sort((a,b)=>a[0].localeCompare(b[0]))
+   .slice(-weeksWindow);
+
+ if(entries.length<2)return;
+
+ const vals=entries.map(e=>e[1]);
+ const max=Math.max(...vals);
+ const min=Math.min(...vals);
+
+ const pad=24;
+ const w=canvas.width-pad*2;
+ const h=canvas.height-pad*2;
+
+ ctx.strokeStyle="rgba(255,255,255,.08)";
+ ctx.beginPath();
+ ctx.moveTo(pad,pad+h);
+ ctx.lineTo(pad+w,pad+h);
+ ctx.stroke();
+
+ ctx.strokeStyle="#31d07c";
+ ctx.lineWidth=3;
+ ctx.lineJoin="round";
+ ctx.lineCap="round";
+ ctx.beginPath();
+
  vals.forEach((v,i)=>{
-   const px=i*(c.width/(vals.length-1||1));
-   const py=c.height-(v/max)*(c.height-20)-10;
-   if(i===0)x.moveTo(px,py);else x.lineTo(px,py);
+   const x=pad+(i/(vals.length-1))*w;
+   const y=pad+h-((v-min)/(max-min||1))*h;
+   i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
  });
- x.stroke();
+ ctx.stroke();
+
+ ctx.fillStyle="#31d07c";
+ vals.forEach((v,i)=>{
+   const x=pad+(i/(vals.length-1))*w;
+   const y=pad+h-((v-min)/(max-min||1))*h;
+   ctx.beginPath();
+   ctx.arc(x,y,4,0,Math.PI*2);
+   ctx.fill();
+ });
 }
 
 function drawCalendar(byDay){
@@ -218,7 +245,7 @@ function drawCalendar(byDay){
    const intensity=Math.min(v/100,1);
    const d=document.createElement("div");
    d.className="day";
-   d.style.background=`rgba(49,208,124,${intensity*0.5})`;
+   d.style.background=`rgba(49,208,124,${intensity*0.45})`;
    d.innerHTML=`<div class="num">${i}</div><div class="sum">${v||""}</div>`;
    cal.appendChild(d);
  }
