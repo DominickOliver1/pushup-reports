@@ -1,117 +1,163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pushup Reports</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b1220">
-  <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>Push-Up Reports</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0b1220;
+  color: #e7eefc;
+}
+header {
+  padding: 20px;
+}
+h1 { margin: 0; }
+button {
+  background: #2b66ff;
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+.card {
+  background: #14233b;
+  border-radius: 14px;
+  padding: 16px;
+}
+.label {
+  color: #9fb0d0;
+  font-size: 12px;
+}
+.value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #28d17c;
+}
+.history {
+  padding: 16px;
+}
+.item {
+  background: #14233b;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.item strong {
+  font-size: 22px;
+  color: #28d17c;
+}
+footer {
+  padding: 10px 16px;
+  color: #9fb0d0;
+  font-size: 12px;
+}
+</style>
 </head>
+
 <body>
-  <header class="topbar">
-    <div>
-      <h1>Reports & Stats</h1>
-      <p class="sub">Read-only dashboard (Google Sheets → Live)</p>
-    </div>
-    <div class="actions">
-      <button id="refreshBtn" class="btn primary">🔄 Refresh Data</button>
-      <button id="installBtn" class="btn" style="display:none;">📲 Install</button>
-    </div>
-  </header>
 
-  <main class="wrap">
-    <section class="grid">
-      <div class="card">
-        <div class="label">TOTAL WORKOUTS</div>
-        <div class="value" id="totalWorkouts">—</div>
-      </div>
-      <div class="card">
-        <div class="label">TOTAL REPS LOGGED</div>
-        <div class="value" id="totalReps">—</div>
-      </div>
-      <div class="card">
-        <div class="label">AVG. REPS (PER SESSION)</div>
-        <div class="value" id="avgPerSession">—</div>
-      </div>
-      <div class="card">
-        <div class="label">BEST SESSION</div>
-        <div class="valueSmall" id="bestSession">—</div>
-      </div>
-      <div class="card">
-        <div class="label">DAILY AVG. REPS</div>
-        <div class="value" id="dailyAvg">—</div>
-      </div>
-      <div class="card">
-        <div class="label">WEEKLY AVG. REPS</div>
-        <div class="value" id="weeklyAvg">—</div>
-      </div>
-    </section>
+<header>
+  <h1>Reports & Stats</h1>
+  <button onclick="loadData()">🔄 Refresh Data</button>
+</header>
 
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Personal Records</h2>
-      </div>
-      <div class="grid prGrid">
-        <div class="card mini">
-          <div class="label">BEST SET</div>
-          <div class="value" id="prBestSet">—</div>
-        </div>
-        <div class="card mini">
-          <div class="label">BEST DAY</div>
-          <div class="value" id="prBestDay">—</div>
-        </div>
-        <div class="card mini">
-          <div class="label">BEST WEEK</div>
-          <div class="value" id="prBestWeek">—</div>
-        </div>
-        <div class="card mini">
-          <div class="label">BEST MONTH</div>
-          <div class="value" id="prBestMonth">—</div>
-        </div>
-      </div>
-      <p class="hint">PRs update automatically based on your spreadsheet.</p>
-    </section>
+<section class="grid">
+  <div class="card">
+    <div class="label">TOTAL WORKOUTS</div>
+    <div class="value" id="workouts">—</div>
+  </div>
+  <div class="card">
+    <div class="label">TOTAL REPS</div>
+    <div class="value" id="totalReps">—</div>
+  </div>
+  <div class="card">
+    <div class="label">AVG REPS / SESSION</div>
+    <div class="value" id="avgSession">—</div>
+  </div>
+  <div class="card">
+    <div class="label">BEST SESSION</div>
+    <div class="value" id="bestSession">—</div>
+  </div>
+  <div class="card">
+    <div class="label">DAILY AVG REPS</div>
+    <div class="value" id="dailyAvg">—</div>
+  </div>
+  <div class="card">
+    <div class="label">WEEKLY AVG REPS</div>
+    <div class="value" id="weeklyAvg">—</div>
+  </div>
+</section>
 
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Weekly Volume Trend</h2>
-      </div>
-      <div class="chartWrap">
-        <canvas id="weeklyChart" width="800" height="260"></canvas>
-      </div>
-    </section>
+<section class="history">
+  <h2>Activity History</h2>
+  <div id="history"></div>
+</section>
 
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Calendar</h2>
-        <div class="calActions">
-          <button class="btn" id="prevMonth">◀</button>
-          <button class="btn" id="todayBtn">Today</button>
-          <button class="btn" id="nextMonth">▶</button>
-        </div>
-      </div>
-      <div class="calTitle" id="calTitle">—</div>
-      <div class="calendar" id="calendar"></div>
-      <div class="dayDetails" id="dayDetails" style="display:none;"></div>
-    </section>
+<footer id="status">Idle</footer>
 
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Activity History</h2>
-        <div class="right">
-          <button id="csvBtn" class="btn primary">📥 Download CSV</button>
-        </div>
-      </div>
-      <div id="history" class="history"></div>
-    </section>
+<script>
+// 🔴 PASTE YOUR APPS SCRIPT WEB APP URL HERE
+const DATA_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 
-    <footer class="foot">
-      <span id="status">Idle</span>
-    </footer>
-  </main>
+async function loadData() {
+  document.getElementById("status").textContent = "Loading...";
+  const res = await fetch(DATA_URL + "?t=" + Date.now());
+  const data = await res.json();
 
-  <script src="app.js"></script>
+  const totalReps = data.reduce((s, r) => s + r.reps, 0);
+  const workouts = data.length;
+  const avgSession = workouts ? (totalReps / workouts).toFixed(1) : 0;
+
+  const byDay = {};
+  data.forEach(r => byDay[r.date] = (byDay[r.date] || 0) + r.reps);
+  const days = Object.keys(byDay).length;
+  const dailyAvg = days ? (totalReps / days).toFixed(1) : 0;
+
+  const byWeek = {};
+  data.forEach(r => {
+    const d = new Date(r.date);
+    const week = `${d.getFullYear()}-W${Math.ceil(d.getDate()/7)}`;
+    byWeek[week] = (byWeek[week] || 0) + r.reps;
+  });
+  const weeklyAvg = Object.values(byWeek).length
+    ? (totalReps / Object.values(byWeek).length).toFixed(1)
+    : 0;
+
+  const best = Math.max(...data.map(r => r.reps), 0);
+
+  document.getElementById("workouts").textContent = workouts;
+  document.getElementById("totalReps").textContent = totalReps;
+  document.getElementById("avgSession").textContent = avgSession;
+  document.getElementById("bestSession").textContent = best;
+  document.getElementById("dailyAvg").textContent = dailyAvg;
+  document.getElementById("weeklyAvg").textContent = weeklyAvg;
+
+  const history = document.getElementById("history");
+  history.innerHTML = "";
+  data.slice().reverse().slice(0, 20).forEach(r => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `<strong>${r.reps} Reps</strong><br>${r.date}`;
+    history.appendChild(div);
+  });
+
+  document.getElementById("status").textContent = `Loaded ${workouts} workouts`;
+}
+
+loadData();
+</script>
+
 </body>
 </html>
