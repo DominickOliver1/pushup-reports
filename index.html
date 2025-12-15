@@ -8,12 +8,12 @@
 <style>
 :root{
   --bg:#060b14;
-  --panel:#0c1424;
   --card:#0f1d34;
   --border:rgba(255,255,255,.08);
   --text:#e6eefc;
   --muted:#9fb0d0;
   --green:#31d07c;
+  --amber:#f5b942;
   --blue:#2b66ff;
 }
 *{box-sizing:border-box}
@@ -29,7 +29,7 @@ header{
   justify-content:space-between;
   align-items:flex-end;
 }
-h1{margin:0;font-size:26px}
+h1,h2{margin:0 0 10px}
 button{
   background:var(--blue);
   color:#fff;
@@ -67,37 +67,12 @@ button{
   font-size:18px;
   font-weight:700;
 }
-.section{
-  padding:16px;
-}
+.section{padding:16px}
 canvas{
   width:100%;
   background:linear-gradient(180deg,#0b1426,#070c17);
   border-radius:18px;
   border:1px solid var(--border);
-}
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:10px;
-}
-.day{
-  height:70px;
-  border-radius:14px;
-  border:1px solid var(--border);
-  background:#0a1222;
-  position:relative;
-  padding:8px;
-}
-.day .num{
-  font-size:12px;
-  color:var(--muted);
-}
-.day .sum{
-  position:absolute;
-  right:8px;
-  bottom:8px;
-  font-weight:800;
 }
 footer{
   padding:10px 16px;
@@ -112,7 +87,7 @@ footer{
 <header>
   <div>
     <h1>Reports & Stats</h1>
-    <div style="color:var(--muted)">Read-only • Live from Google Sheets</div>
+    <div style="color:var(--muted)">Live • Read-only</div>
   </div>
   <button onclick="loadData()">🔄 Refresh</button>
 </header>
@@ -138,19 +113,14 @@ footer{
     <option value="8">Last 8 weeks</option>
     <option value="12" selected>Last 12 weeks</option>
   </select>
-  <canvas id="trend" height="240"></canvas>
-</section>
-
-<section class="section">
-  <h2>Calendar</h2>
-  <div class="calendar" id="calendar"></div>
+  <canvas id="trend" height="260"></canvas>
 </section>
 
 <footer id="status">Idle</footer>
 
 <script>
 const DATA_URL="https://script.google.com/macros/s/AKfycbxCYLXUKDsKNGhHUQzh_135yHk0j5lZ9JJZdJpxGiOEu66HndjWqQMWRBd7XZBIpCec/exec";
-let data=[],weeksWindow=12;
+let data=[],weeksWindow=12,weeklyCache={};
 
 function loadData(){
  fetch(DATA_URL+"?t="+Date.now())
@@ -168,49 +138,62 @@ function render(){
  const byDay={},byWeek={},byMonth={};
  data.forEach(r=>{
   byDay[r.date]=(byDay[r.date]||0)+r.reps;
+
   const d=new Date(r.date+"T00:00:00");
-  d.setDate(d.getDate()-(d.getDay()+6)%7);
+  d.setDate(d.getDate()-(d.getDay()+6)%7); // Monday
   const w=d.toISOString().slice(0,10);
   byWeek[w]=(byWeek[w]||0)+r.reps;
+
   const m=r.date.slice(0,7);
   byMonth[m]=(byMonth[m]||0)+r.reps;
  });
+
+ weeklyCache=byWeek;
 
  document.getElementById("bestDay").textContent=Math.max(...Object.values(byDay));
  document.getElementById("bestWeek").textContent=Math.max(...Object.values(byWeek));
  document.getElementById("bestMonth").textContent=Math.max(...Object.values(byMonth));
 
- drawTrend(byWeek);
- drawCalendar(byDay);
+ drawTrend();
  document.getElementById("status").textContent="Updated";
 }
 
-function drawTrend(byWeek){
+function drawTrend(){
  const canvas=document.getElementById("trend");
  const ctx=canvas.getContext("2d");
  ctx.clearRect(0,0,canvas.width,canvas.height);
 
- const entries=Object.entries(byWeek)
+ const entries=Object.entries(weeklyCache)
    .sort((a,b)=>a[0].localeCompare(b[0]))
    .slice(-weeksWindow);
 
  if(entries.length<2)return;
 
  const vals=entries.map(e=>e[1]);
- const max=Math.max(...vals);
- const min=Math.min(...vals);
+ const labels=entries.map(e=>{
+   const d=new Date(e[0]);
+   const onejan=new Date(d.getFullYear(),0,1);
+   const week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);
+   return "W"+week;
+ });
 
- const pad=24;
+ const improving=vals[vals.length-1]>=vals[0];
+ const color=improving?"#31d07c":"#f5b942";
+
+ const max=Math.max(...vals),min=Math.min(...vals);
+ const pad=32;
  const w=canvas.width-pad*2;
  const h=canvas.height-pad*2;
 
+ // baseline
  ctx.strokeStyle="rgba(255,255,255,.08)";
  ctx.beginPath();
  ctx.moveTo(pad,pad+h);
  ctx.lineTo(pad+w,pad+h);
  ctx.stroke();
 
- ctx.strokeStyle="#31d07c";
+ // line
+ ctx.strokeStyle=color;
  ctx.lineWidth=3;
  ctx.lineJoin="round";
  ctx.lineCap="round";
@@ -223,32 +206,19 @@ function drawTrend(byWeek){
  });
  ctx.stroke();
 
- ctx.fillStyle="#31d07c";
+ // points + labels
+ ctx.fillStyle=color;
+ ctx.font="12px system-ui";
+ ctx.textAlign="center";
+
  vals.forEach((v,i)=>{
    const x=pad+(i/(vals.length-1))*w;
    const y=pad+h-((v-min)/(max-min||1))*h;
    ctx.beginPath();
    ctx.arc(x,y,4,0,Math.PI*2);
    ctx.fill();
+   ctx.fillText(labels[i],x,pad+h+18);
  });
-}
-
-function drawCalendar(byDay){
- const cal=document.getElementById("calendar");
- cal.innerHTML="";
- const today=new Date();
- const y=today.getFullYear(),m=today.getMonth();
- const days=new Date(y,m+1,0).getDate();
- for(let i=1;i<=days;i++){
-   const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
-   const v=byDay[iso]||0;
-   const intensity=Math.min(v/100,1);
-   const d=document.createElement("div");
-   d.className="day";
-   d.style.background=`rgba(49,208,124,${intensity*0.45})`;
-   d.innerHTML=`<div class="num">${i}</div><div class="sum">${v||""}</div>`;
-   cal.appendChild(d);
- }
 }
 
 loadData();
