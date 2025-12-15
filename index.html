@@ -29,10 +29,10 @@ body{
 header{padding:22px}
 h1,h2{margin:0 0 10px}
 .sub{color:var(--muted);font-size:13px}
-button,input{
+button{
   background:linear-gradient(180deg,#3a7bff,#2b66ff);
   color:#fff;border:none;border-radius:14px;
-  padding:8px 12px;font-weight:600;
+  padding:8px 12px;font-weight:600;cursor:pointer
 }
 .section{padding:0 16px;margin-top:22px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
@@ -44,39 +44,25 @@ button,input{
   box-shadow:0 10px 35px rgba(0,0,0,.45);
 }
 .label{color:var(--muted);font-size:11px;letter-spacing:.12em}
-.value{margin-top:8px;font-size:32px;font-weight:800;color:var(--green)}
+.value{margin-top:8px;font-size:30px;font-weight:800;color:var(--green)}
+.badge{padding:6px 10px;border-radius:12px;font-size:12px}
+.badge.green{background:rgba(49,208,124,.15);color:var(--green)}
+.badge.amber{background:rgba(245,185,66,.15);color:var(--amber)}
 canvas{
   width:100%;
   background:linear-gradient(180deg,#0b1426,#060b14);
   border-radius:18px;
   border:1px solid var(--border);
 }
-
-/* goal */
 .progress{height:12px;background:#070c17;border-radius:12px;overflow:hidden}
 .progress div{height:100%;background:linear-gradient(90deg,#31d07c,#6bffb2);box-shadow:var(--glow)}
-
-/* calendar */
-.calendar-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-.day{
-  height:64px;border-radius:14px;border:1px solid var(--border);
-  background:#081020;padding:6px;position:relative;cursor:pointer
-}
+.day{height:64px;border-radius:14px;border:1px solid var(--border);padding:6px;position:relative}
 .day .num{font-size:11px;color:var(--muted)}
 .day .sum{position:absolute;right:6px;bottom:6px;font-weight:800}
-
-/* achievements */
-.badge{
-  background:#070c17;border:1px solid var(--border);
-  border-radius:14px;padding:14px;text-align:center;opacity:.35
-}
-.badge.unlocked{
-  opacity:1;background:linear-gradient(180deg,rgba(49,208,124,.18),rgba(0,0,0,.15));
-  border-color:rgba(49,208,124,.5);box-shadow:var(--glow)
-}
-.badge .big{font-size:22px;font-weight:800;color:var(--green)}
-
+.legend{display:flex;gap:8px;margin-top:8px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}
 footer{margin:20px 16px;color:var(--muted);font-size:12px}
 </style>
 </head>
@@ -85,159 +71,146 @@ footer{margin:20px 16px;color:var(--muted);font-size:12px}
 
 <header>
   <h1>Push-Up Performance</h1>
-  <div class="sub">Live • Read-only • Visual Analytics</div>
+  <div class="sub">Live analytics • Enhanced insights</div>
   <button onclick="loadData()">Refresh</button>
 </header>
 
+<!-- CORE METRICS -->
 <section class="section grid">
   <div class="card"><div class="label">TOTAL REPS</div><div class="value" id="totalReps">—</div></div>
   <div class="card"><div class="label">WORKOUTS</div><div class="value" id="workouts">—</div></div>
-  <div class="card"><div class="label">BEST DAY</div><div class="value" id="bestDay">—</div></div>
-  <div class="card"><div class="label">BEST WEEK</div><div class="value" id="bestWeek">—</div></div>
+  <div class="card"><div class="label">AVG / TRAIN DAY</div><div class="value" id="avgPerDay">—</div></div>
+  <div class="card"><div class="label">DAYS / WEEK</div><div class="value" id="daysPerWeek">—</div></div>
 </section>
 
+<!-- WEEK OVER WEEK -->
 <section class="section">
-  <h2>🎯 Daily Goal</h2>
-  <input id="goalInput" type="number" style="width:100px"> 
-  <button onclick="saveGoal()">Save</button>
-  <div class="progress" style="margin-top:10px"><div id="goalBar"></div></div>
-  <div class="sub" id="goalText"></div>
+  <h2>Week-over-Week</h2>
+  <div id="weekDelta"></div>
 </section>
 
+<!-- FILTERS -->
 <section class="section">
-  <h2>📊 Weekly Trend</h2>
-  <canvas id="weeklyTrend" height="220"></canvas>
+  <h2>Filters</h2>
+  <button onclick="setRange(7)">Last 7</button>
+  <button onclick="setRange(30)">Last 30</button>
+  <button onclick="setRange(0)">All</button>
 </section>
 
+<!-- GRADIENT + ROLLING AVG -->
 <section class="section">
-  <h2>📈 Daily Performance (Gradient)</h2>
-  <canvas id="dailyGradient" height="260"></canvas>
+  <h2>Performance Trend</h2>
+  <canvas id="gradientChart" height="260"></canvas>
 </section>
 
+<!-- CALENDAR -->
 <section class="section">
-  <h2>📅 Calendar</h2>
-  <div class="calendar-nav">
-    <button onclick="changeMonth(-1)">◀</button>
-    <div id="monthLabel"></div>
-    <button onclick="changeMonth(1)">▶</button>
-  </div>
+  <h2>Calendar</h2>
   <div class="calendar" id="calendar"></div>
-  <div class="sub" id="dayDetails"></div>
+  <div class="legend">
+    <span><i style="background:rgba(49,208,124,.15)"></i>Low</span>
+    <span><i style="background:rgba(49,208,124,.4)"></i>Medium</span>
+    <span><i style="background:rgba(49,208,124,.7)"></i>High</span>
+  </div>
 </section>
 
+<!-- ACHIEVEMENT CHAINS -->
 <section class="section">
-  <h2>🏆 Achievements</h2>
-  <div class="grid" id="achievements"></div>
+  <h2>Streak Achievements</h2>
+  <div class="grid" id="streakAchievements"></div>
 </section>
 
 <footer id="status">Idle</footer>
 
 <script>
 const DATA_URL="https://script.google.com/macros/s/AKfycbxCYLXUKDsKNGhHUQzh_135yHk0j5lZ9JJZdJpxGiOEu66HndjWqQMWRBd7XZBIpCec/exec";
-let data=[],currentMonth=new Date(),goal=Number(localStorage.goal)||50;
-goalInput.value=goal;
+let data=[],range=0;
 
-function saveGoal(){goal=+goalInput.value||50;localStorage.goal=goal;render();}
-function loadData(){fetch(DATA_URL+"?t="+Date.now()).then(r=>r.json()).then(j=>{data=j;render();});}
+function setRange(d){range=d;render();}
+function loadData(){fetch(DATA_URL).then(r=>r.json()).then(j=>{data=j;render();});}
 
 function render(){
+ let d=data.slice();
+ if(range){
+   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-range);
+   d=d.filter(r=>new Date(r.date)>=cutoff);
+ }
+
  const byDay={},byWeek={};
- data.forEach(r=>{
-  byDay[r.date]=(byDay[r.date]||0)+r.reps;
-  const d=new Date(r.date+"T00:00");d.setDate(d.getDate()-(d.getDay()+6)%7);
-  byWeek[d.toISOString().slice(0,10)]=(byWeek[d.toISOString().slice(0,10)]||0)+r.reps;
+ d.forEach(r=>{
+   byDay[r.date]=(byDay[r.date]||0)+r.reps;
+   const x=new Date(r.date);x.setDate(x.getDate()-(x.getDay()+6)%7);
+   const w=x.toISOString().slice(0,10);
+   byWeek[w]=(byWeek[w]||0)+r.reps;
  });
 
- totalReps.textContent=data.reduce((s,r)=>s+r.reps,0);
- workouts.textContent=data.length;
- bestDay.textContent=Math.max(...Object.values(byDay));
- bestWeek.textContent=Math.max(...Object.values(byWeek));
+ totalReps.textContent=d.reduce((s,r)=>s+r.reps,0);
+ workouts.textContent=d.length;
+ avgPerDay.textContent=(totalReps.textContent/Object.keys(byDay).length||0).toFixed(1);
+ daysPerWeek.textContent=(Object.keys(byWeek).length?Object.keys(byDay).length/Object.keys(byWeek).length:0).toFixed(1);
 
- renderGoal(byDay);
- drawWeeklyTrend(byWeek);
- drawDailyGradient(byDay);
+ renderWeekDelta(byWeek);
+ drawGradient(byDay);
  renderCalendar(byDay);
- renderAchievements(totalReps.textContent);
+ renderStreakAchievements(byDay);
  status.textContent="Updated";
 }
 
-function renderGoal(byDay){
- const t=new Date().toISOString().slice(0,10);
- const v=byDay[t]||0;
- goalBar.style.width=Math.min(v/goal*100,100)+"%";
- goalText.textContent=`${v} / ${goal} reps today`;
+function renderWeekDelta(byWeek){
+ const w=Object.values(byWeek);
+ if(w.length<2){weekDelta.innerHTML="—";return;}
+ const delta=w[w.length-1]-w[w.length-2];
+ weekDelta.innerHTML=`<span class="badge ${delta>=0?"green":"amber"}">${delta>=0?"+":""}${delta} reps vs last week</span>`;
 }
 
-/* FIXED CANVAS GRADIENT */
-function drawDailyGradient(byDay){
- const c=dailyGradient,ctx=c.getContext("2d");
+function drawGradient(byDay){
+ const c=gradientChart,ctx=c.getContext("2d");
  c.width=c.clientWidth;c.height=260;
  ctx.clearRect(0,0,c.width,c.height);
-
- const e=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0])).slice(-30);
+ const e=Object.entries(byDay).sort().slice(-30);
  if(e.length<2)return;
-
- const vals=e.map(i=>i[1]);
+ const vals=e.map(v=>v[1]);
  const max=Math.max(...vals),min=Math.min(...vals);
  const pad=24,w=c.width-pad*2,h=c.height-pad*2;
-
  const grad=ctx.createLinearGradient(0,pad+h,0,pad);
- grad.addColorStop(0,"#145c3a");
- grad.addColorStop(1,"#6bffb2");
-
- ctx.beginPath();
+ grad.addColorStop(0,"#145c3a");grad.addColorStop(1,"#6bffb2");
+ ctx.strokeStyle=grad;ctx.lineWidth=4;ctx.beginPath();
  vals.forEach((v,i)=>{
-  const x=pad+(i/(vals.length-1))*w;
-  const y=pad+h-((v-min)/(max-min||1))*h;
-  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+   const x=pad+i*(w/(vals.length-1));
+   const y=pad+h-((v-min)/(max-min||1))*h;
+   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
  });
- ctx.strokeStyle=grad;ctx.lineWidth=4;ctx.lineJoin="round";ctx.stroke();
-
- ctx.lineTo(pad+w,pad+h);ctx.lineTo(pad,pad+h);ctx.closePath();
- ctx.globalAlpha=0.15;ctx.fillStyle=grad;ctx.fill();ctx.globalAlpha=1;
-}
-
-function drawWeeklyTrend(byWeek){
- const c=weeklyTrend,x=c.getContext("2d");
- c.width=c.clientWidth;c.height=220;
- x.clearRect(0,0,c.width,c.height);
- const e=Object.entries(byWeek).sort((a,b)=>a[0].localeCompare(b[0])).slice(-8);
- if(e.length<2)return;
- const v=e.map(i=>i[1]),max=Math.max(...v),min=Math.min(...v);
- x.strokeStyle="#31d07c";x.lineWidth=3;x.beginPath();
- v.forEach((n,i)=>{
-  const px=i*(c.width/(v.length-1));
-  const py=c.height-((n-min)/(max-min||1))*c.height;
-  i?x.lineTo(px,py):x.moveTo(px,py);
- });
- x.stroke();
+ ctx.stroke();
 }
 
 function renderCalendar(byDay){
  calendar.innerHTML="";
- const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
- monthLabel.textContent=currentMonth.toLocaleString("default",{month:"long",year:"numeric"});
+ const t=new Date(),y=t.getFullYear(),m=t.getMonth();
  for(let i=1;i<=new Date(y,m+1,0).getDate();i++){
-  const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
-  const v=byDay[iso]||0;
-  const d=document.createElement("div");
-  d.className="day";
-  d.style.background=`rgba(49,208,124,${Math.min(v/100,.6)})`;
-  d.innerHTML=`<div class="num">${i}</div><div class="sum">${v||""}</div>`;
-  d.onclick=()=>dayDetails.textContent=`${iso}: ${v} reps`;
-  calendar.appendChild(d);
+   const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+   const v=byDay[iso]||0;
+   const d=document.createElement("div");
+   d.className="day";
+   d.style.background=`rgba(49,208,124,${Math.min(v/100,.7)})`;
+   d.innerHTML=`<div class="num">${i}</div><div class="sum">${v||""}</div>`;
+   calendar.appendChild(d);
  }
 }
 
-function changeMonth(d){currentMonth.setMonth(currentMonth.getMonth()+d);render();}
-
-function renderAchievements(total){
- achievements.innerHTML="";
- [500,1000,2500,5000,10000].forEach(m=>{
-  const b=document.createElement("div");
-  b.className="badge"+(total>=m?" unlocked":"");
-  b.innerHTML=`<div class="big">${m}</div><div class="label">TOTAL REPS</div>`;
-  achievements.appendChild(b);
+function renderStreakAchievements(byDay){
+ const days=Object.keys(byDay).sort();
+ let streak=0,max=0;
+ for(let i=0;i<days.length;i++){
+   if(i>0 && new Date(days[i])-new Date(days[i-1])===86400000) streak++;
+   else streak=1;
+   max=Math.max(max,streak);
+ }
+ streakAchievements.innerHTML="";
+ [3,7,14,30].forEach(n=>{
+   const div=document.createElement("div");
+   div.className="card";
+   div.innerHTML=`<div class="label">${n}-Day Streak</div><div class="value">${max>=n?"Unlocked":"Locked"}</div>`;
+   streakAchievements.appendChild(div);
  });
 }
 
