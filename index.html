@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Push-Up Performance</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <style>
 :root{
@@ -23,28 +23,14 @@ body{
   margin:0;
   font-family:system-ui,-apple-system,Segoe UI,Roboto;
   background:
-    radial-gradient(800px 400px at 50% -200px,#0e1b36 0%,var(--bg) 55%),
-    linear-gradient(#04070e,#050812);
+    radial-gradient(800px 400px at 50% -200px,#0e1b36 0%,var(--bg) 55%);
   color:var(--text);
 }
 
-/* ---------- HEADER ---------- */
-header{
-  padding:22px 20px 10px;
-}
-header h1{
-  margin:0;
-  font-size:28px;
-  letter-spacing:.4px;
-}
-header .sub{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:13px;
-}
-header .actions{
-  margin-top:14px;
-}
+/* HEADER */
+header{padding:22px}
+header h1{margin:0;font-size:26px}
+.sub{margin-top:6px;color:var(--muted);font-size:13px}
 button{
   background:linear-gradient(180deg,#3a7bff,#2b66ff);
   color:#fff;
@@ -52,118 +38,56 @@ button{
   border-radius:14px;
   padding:10px 16px;
   font-weight:600;
-  box-shadow:0 6px 20px rgba(43,102,255,.35);
+  margin-top:10px;
 }
 
-/* ---------- LAYOUT ---------- */
-.section{
-  margin-top:18px;
-  padding:0 16px;
-}
-.section h2{
-  margin:0 0 10px;
-  font-size:18px;
-  letter-spacing:.3px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
-}
+/* LAYOUT */
+.section{padding:0 16px;margin-top:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
 
-/* ---------- CARDS ---------- */
+/* CARDS */
 .card{
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.1)),
-    var(--card);
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.1)),var(--card);
   border:1px solid var(--border);
   border-radius:18px;
   padding:16px;
   box-shadow:0 10px 35px rgba(0,0,0,.45);
 }
-.card .label{
-  color:var(--muted);
-  font-size:11px;
-  letter-spacing:.12em;
-}
-.card .value{
-  margin-top:8px;
-  font-size:34px;
-  font-weight:800;
-  color:var(--green);
-}
-.card.small .value{
-  font-size:20px;
-}
+.label{color:var(--muted);font-size:11px;letter-spacing:.12em}
+.value{margin-top:8px;font-size:32px;font-weight:800;color:var(--green)}
 
-/* ---------- GOAL ---------- */
-.goalBox{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:16px;
-}
-.goalRow{
-  display:flex;
-  gap:8px;
-  margin-bottom:10px;
-}
-.goalRow input{
-  flex:1;
-  background:#070c17;
-  color:#fff;
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:8px 10px;
-}
-.progress{
-  height:12px;
-  background:#070c17;
-  border-radius:12px;
-  overflow:hidden;
-}
+/* GOAL */
+.progress{height:12px;background:#070c17;border-radius:12px;overflow:hidden}
 .progress div{
   height:100%;
   background:linear-gradient(90deg,#31d07c,#3cff9d);
   box-shadow:var(--glow);
-  transition:width .4s ease;
+  transition:width .3s;
 }
 
-/* ---------- TREND ---------- */
-canvas{
-  width:100%;
-  background:
-    linear-gradient(180deg,#0b1426,#060b14);
-  border-radius:18px;
-  border:1px solid var(--border);
-}
-
-/* ---------- CALENDAR ---------- */
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-}
+/* CALENDAR */
+.calendar-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 .day{
-  height:66px;
+  height:64px;
   border-radius:14px;
   border:1px solid var(--border);
   background:#081020;
   padding:6px;
   position:relative;
 }
-.day .num{
-  font-size:11px;
-  color:var(--muted);
-}
-.day .sum{
-  position:absolute;
-  right:6px;
-  bottom:6px;
-  font-weight:800;
-}
+.day .num{font-size:11px;color:var(--muted)}
+.day .sum{position:absolute;right:6px;bottom:6px;font-weight:800}
 
-/* ---------- ACHIEVEMENTS ---------- */
+/* STREAK */
+.streak-bar{display:flex;gap:6px;margin-top:10px}
+.streak-dot{
+  width:12px;height:12px;border-radius:50%;
+  background:#0a1222;border:1px solid var(--border)
+}
+.streak-dot.active{background:var(--green);box-shadow:var(--glow)}
+
+/* ACHIEVEMENTS */
 .badge{
   background:#070c17;
   border:1px solid var(--border);
@@ -174,24 +98,13 @@ canvas{
 }
 .badge.unlocked{
   opacity:1;
-  background:
-    linear-gradient(180deg,rgba(49,208,124,.18),rgba(0,0,0,.15)),
-    #0b1a2b;
+  background:linear-gradient(180deg,rgba(49,208,124,.18),rgba(0,0,0,.15));
   border-color:rgba(49,208,124,.5);
   box-shadow:var(--glow);
 }
-.badge .big{
-  font-size:22px;
-  font-weight:800;
-  color:var(--green);
-}
+.badge .big{font-size:22px;font-weight:800;color:var(--green)}
 
-/* ---------- FOOTER ---------- */
-footer{
-  margin:20px 16px;
-  color:var(--muted);
-  font-size:12px;
-}
+footer{margin:20px 16px;color:var(--muted);font-size:12px}
 </style>
 </head>
 
@@ -199,40 +112,37 @@ footer{
 
 <header>
   <h1>Push-Up Performance</h1>
-  <div class="sub">Live analytics • Read-only</div>
-  <div class="actions">
-    <button onclick="loadData()">Refresh Data</button>
-  </div>
+  <div class="sub">Live • Read-only • Installable</div>
+  <button onclick="loadData()">Refresh</button>
+  <button onclick="copyStats()">Copy Stats</button>
 </header>
 
+<section class="section grid">
+  <div class="card"><div class="label">TOTAL REPS</div><div class="value" id="totalReps">—</div></div>
+  <div class="card"><div class="label">WORKOUTS</div><div class="value" id="workouts">—</div></div>
+  <div class="card"><div class="label">BEST DAY</div><div class="value" id="bestDay">—</div></div>
+  <div class="card"><div class="label">BEST WEEK</div><div class="value" id="bestWeek">—</div></div>
+</section>
+
 <section class="section">
-  <div class="grid">
-    <div class="card"><div class="label">TOTAL REPS</div><div class="value" id="totalReps">—</div></div>
-    <div class="card"><div class="label">WORKOUTS</div><div class="value" id="workouts">—</div></div>
-    <div class="card"><div class="label">BEST DAY</div><div class="value" id="bestDay">—</div></div>
-    <div class="card"><div class="label">BEST WEEK</div><div class="value" id="bestWeek">—</div></div>
-  </div>
+  <h2>🔥 Streak</h2>
+  <div class="label" id="streakText"></div>
+  <div class="streak-bar" id="streakBar"></div>
 </section>
 
 <section class="section">
   <h2>🎯 Daily Goal</h2>
-  <div class="goalBox">
-    <div class="goalRow">
-      <input type="number" id="goalInput">
-      <button onclick="saveGoal()">Save</button>
-    </div>
-    <div class="progress"><div id="goalBar"></div></div>
-    <div class="sub" id="goalText"></div>
-  </div>
-</section>
-
-<section class="section">
-  <h2>📊 Weekly Trend</h2>
-  <canvas id="trend" height="220"></canvas>
+  <div class="progress"><div id="goalBar"></div></div>
+  <div class="sub" id="goalText"></div>
 </section>
 
 <section class="section">
   <h2>📅 Calendar</h2>
+  <div class="calendar-nav">
+    <button onclick="changeMonth(-1)">◀</button>
+    <div id="monthLabel"></div>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>
   <div class="calendar" id="calendar"></div>
   <div class="sub" id="dayDetails"></div>
 </section>
@@ -245,51 +155,67 @@ footer{
 <footer id="status">Idle</footer>
 
 <script>
-/* ---- SAME LOGIC YOU ALREADY HAVE ---- */
 const DATA_URL="https://script.google.com/macros/s/AKfycbxCYLXUKDsKNGhHUQzh_135yHk0j5lZ9JJZdJpxGiOEu66HndjWqQMWRBd7XZBIpCec/exec";
-let data=[],goal=Number(localStorage.goal)||50;
-goalInput.value=goal;
+let data=[],currentMonth=new Date(),goal=Number(localStorage.goal)||50;
 
-function saveGoal(){goal=Number(goalInput.value||50);localStorage.goal=goal;render();}
-function loadData(){fetch(DATA_URL+"?t="+Date.now()).then(r=>r.json()).then(j=>{data=j;render();});}
+function loadData(){
+ fetch(DATA_URL+"?t="+Date.now())
+ .then(r=>r.json())
+ .then(j=>{data=j;render();});
+}
 
 function render(){
- const total=data.reduce((s,r)=>s+r.reps,0);
- totalReps.textContent=total;
- workouts.textContent=data.length;
-
  const byDay={},byWeek={};
  data.forEach(r=>{
   byDay[r.date]=(byDay[r.date]||0)+r.reps;
   const d=new Date(r.date+"T00:00");
   d.setDate(d.getDate()-(d.getDay()+6)%7);
-  const w=d.toISOString().slice(0,10);
-  byWeek[w]=(byWeek[w]||0)+r.reps;
+  byWeek[d.toISOString().slice(0,10)]=(byWeek[d.toISOString().slice(0,10)]||0)+r.reps;
  });
 
+ totalReps.textContent=data.reduce((s,r)=>s+r.reps,0);
+ workouts.textContent=data.length;
  bestDay.textContent=Math.max(...Object.values(byDay));
  bestWeek.textContent=Math.max(...Object.values(byWeek));
 
+ renderStreak(byDay);
  renderGoal(byDay);
- drawCalendar(byDay);
- drawTrend(byWeek);
- renderAchievements(total);
-
+ renderCalendar(byDay);
+ renderAchievements(totalReps.textContent);
  status.textContent="Updated";
 }
 
-/* ---- rest unchanged ---- */
-function renderGoal(byDay){
- const t=new Date().toISOString().slice(0,10);
- const v=byDay[t]||0;
- goalBar.style.width=Math.min(v/goal*100,100)+"%";
- goalText.textContent=`${v} / ${goal} reps`;
+function renderStreak(byDay){
+ const days=Object.keys(byDay).sort();
+ let current=0,max=0;
+ for(let i=0;i<days.length;i++){
+  if(i>0 && new Date(days[i])-new Date(days[i-1])===86400000) current++;
+  else current=1;
+  max=Math.max(max,current);
+ }
+ streakText.textContent=`Current: ${current} days • Longest: ${max}`;
+ streakBar.innerHTML="";
+ for(let i=0;i<max;i++){
+  const d=document.createElement("div");
+  d.className="streak-dot"+(i<current?" active":"");
+  streakBar.appendChild(d);
+ }
 }
 
-function drawCalendar(byDay){
- calendar.innerHTML=""; dayDetails.textContent="";
- const d=new Date(),y=d.getFullYear(),m=d.getMonth();
- for(let i=1;i<=new Date(y,m+1,0).getDate();i++){
+function renderGoal(byDay){
+ const today=new Date().toISOString().slice(0,10);
+ const v=byDay[today]||0;
+ goalBar.style.width=Math.min(v/goal*100,100)+"%";
+ goalText.textContent=`${v} / ${goal} reps today`;
+}
+
+function renderCalendar(byDay){
+ calendar.innerHTML="";
+ dayDetails.textContent="";
+ const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
+ monthLabel.textContent=currentMonth.toLocaleString("default",{month:"long",year:"numeric"});
+ const days=new Date(y,m+1,0).getDate();
+ for(let i=1;i<=days;i++){
   const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
   const v=byDay[iso]||0;
   const el=document.createElement("div");
@@ -301,31 +227,26 @@ function drawCalendar(byDay){
  }
 }
 
-function drawTrend(byWeek){
- const c=trend,x=c.getContext("2d");
- x.clearRect(0,0,c.width,c.height);
- const e=Object.entries(byWeek).sort((a,b)=>a[0].localeCompare(b[0])).slice(-8);
- if(e.length<2)return;
- const v=e.map(i=>i[1]),max=Math.max(...v),min=Math.min(...v);
- const improving=v[v.length-1]>=v[0];
- x.strokeStyle=improving?"#31d07c":"#f5b942";
- x.lineWidth=3;x.beginPath();
- v.forEach((n,i)=>{
-  const px=i*(c.width/(v.length-1));
-  const py=c.height-((n-min)/(max-min||1))*c.height;
-  i?x.lineTo(px,py):x.moveTo(px,py);
- });
- x.stroke();
-}
+function changeMonth(d){currentMonth.setMonth(currentMonth.getMonth()+d);renderCalendar({});render();}
 
 function renderAchievements(total){
  achievements.innerHTML="";
- [500,1000,2500,5000].forEach(m=>{
-  const d=document.createElement("div");
-  d.className="badge"+(total>=m?" unlocked":"");
-  d.innerHTML=`<div class="big">${m}</div><div class="label">Total Reps</div>`;
-  achievements.appendChild(d);
+ [500,1000,2500,5000,10000].forEach(m=>{
+  const b=document.createElement("div");
+  b.className="badge"+(total>=m?" unlocked":"");
+  b.innerHTML=`<div class="big">${m}</div><div class="label">Total Reps</div>`;
+  achievements.appendChild(b);
  });
+}
+
+function copyStats(){
+ const text=`Push-Up Stats:
+Total Reps: ${totalReps.textContent}
+Workouts: ${workouts.textContent}
+Best Day: ${bestDay.textContent}
+Best Week: ${bestWeek.textContent}`;
+ navigator.clipboard.writeText(text);
+ alert("Stats copied!");
 }
 
 loadData();
