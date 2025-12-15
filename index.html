@@ -4,160 +4,137 @@
 <meta charset="UTF-8">
 <title>Push-Up Reports</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #0b1220;
-  color: #e7eefc;
-}
-header {
-  padding: 20px;
-}
-h1 { margin: 0; }
-button {
-  background: #2b66ff;
-  border: none;
-  color: white;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  padding: 16px;
-}
-.card {
-  background: #14233b;
-  border-radius: 14px;
-  padding: 16px;
-}
-.label {
-  color: #9fb0d0;
-  font-size: 12px;
-}
-.value {
-  font-size: 36px;
-  font-weight: bold;
-  color: #28d17c;
-}
-.history {
-  padding: 16px;
-}
-.item {
-  background: #14233b;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-.item strong {
-  font-size: 22px;
-  color: #28d17c;
-}
-footer {
-  padding: 10px 16px;
-  color: #9fb0d0;
-  font-size: 12px;
-}
+body {margin:0;font-family:system-ui;background:#0b1220;color:#e7eefc}
+header{padding:20px}
+h1,h2{margin:0 0 10px}
+button{background:#2b66ff;border:none;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}
+.card{background:#14233b;border-radius:14px;padding:16px}
+.label{color:#9fb0d0;font-size:12px}
+.value{font-size:34px;font-weight:800;color:#28d17c}
+.valueSmall{font-size:18px;font-weight:700}
+.section{padding:16px}
+.item{background:#14233b;border-radius:14px;padding:14px;margin-bottom:10px}
+canvas{width:100%;background:#0f1a2e;border-radius:14px}
+footer{padding:10px 16px;color:#9fb0d0;font-size:12px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Reports & Stats</h1>
+  <h1>Push-Up Reports</h1>
   <button onclick="loadData()">🔄 Refresh Data</button>
 </header>
 
 <section class="grid">
-  <div class="card">
-    <div class="label">TOTAL WORKOUTS</div>
-    <div class="value" id="workouts">—</div>
-  </div>
-  <div class="card">
-    <div class="label">TOTAL REPS</div>
-    <div class="value" id="totalReps">—</div>
-  </div>
-  <div class="card">
-    <div class="label">AVG REPS / SESSION</div>
-    <div class="value" id="avgSession">—</div>
-  </div>
-  <div class="card">
-    <div class="label">BEST SESSION</div>
-    <div class="value" id="bestSession">—</div>
-  </div>
-  <div class="card">
-    <div class="label">DAILY AVG REPS</div>
-    <div class="value" id="dailyAvg">—</div>
-  </div>
-  <div class="card">
-    <div class="label">WEEKLY AVG REPS</div>
-    <div class="value" id="weeklyAvg">—</div>
-  </div>
+  <div class="card"><div class="label">TOTAL WORKOUTS</div><div class="value" id="workouts">—</div></div>
+  <div class="card"><div class="label">TOTAL REPS</div><div class="value" id="totalReps">—</div></div>
+  <div class="card"><div class="label">AVG / SESSION</div><div class="value" id="avgSession">—</div></div>
+  <div class="card"><div class="label">BEST SESSION</div><div class="value" id="bestSession">—</div></div>
 </section>
 
-<section class="history">
-  <h2>Activity History</h2>
+<section class="grid">
+  <div class="card"><div class="label">THIS WEEK</div><div class="valueSmall" id="thisWeek">—</div></div>
+  <div class="card"><div class="label">LAST WEEK</div><div class="valueSmall" id="lastWeek">—</div></div>
+  <div class="card"><div class="label">THIS MONTH</div><div class="valueSmall" id="thisMonth">—</div></div>
+  <div class="card"><div class="label">LAST MONTH</div><div class="valueSmall" id="lastMonth">—</div></div>
+</section>
+
+<section class="grid">
+  <div class="card"><div class="label">BEST DAY</div><div class="valueSmall" id="bestDay">—</div></div>
+  <div class="card"><div class="label">BEST WEEK</div><div class="valueSmall" id="bestWeek">—</div></div>
+  <div class="card"><div class="label">CURRENT STREAK</div><div class="valueSmall" id="currentStreak">—</div></div>
+  <div class="card"><div class="label">LONGEST STREAK</div><div class="valueSmall" id="longestStreak">—</div></div>
+</section>
+
+<section class="section">
+  <h2>Weekly Trend</h2>
+  <canvas id="trend" height="220"></canvas>
+</section>
+
+<section class="section">
+  <h2>Recent Activity</h2>
   <div id="history"></div>
 </section>
 
 <footer id="status">Idle</footer>
 
 <script>
-// 🔴 https://script.google.com/macros/s/AKfycbxCYLXUKDsKNGhHUQzh_135yHk0j5lZ9JJZdJpxGiOEu66HndjWqQMWRBd7XZBIpCec/exec
 const DATA_URL = "https://script.google.com/macros/s/AKfycbxCYLXUKDsKNGhHUQzh_135yHk0j5lZ9JJZdJpxGiOEu66HndjWqQMWRBd7XZBIpCec/exec";
 
-async function loadData() {
-  document.getElementById("status").textContent = "Loading...";
-  const res = await fetch(DATA_URL + "?t=" + Date.now());
-  const data = await res.json();
+let data = [];
 
-  const totalReps = data.reduce((s, r) => s + r.reps, 0);
-  const workouts = data.length;
-  const avgSession = workouts ? (totalReps / workouts).toFixed(1) : 0;
+function weekKey(d){d=new Date(d);d.setDate(d.getDate()-d.getDay());return d.toISOString().slice(0,10);}
+function monthKey(d){return d.slice(0,7);}
 
-  const byDay = {};
-  data.forEach(r => byDay[r.date] = (byDay[r.date] || 0) + r.reps);
-  const days = Object.keys(byDay).length;
-  const dailyAvg = days ? (totalReps / days).toFixed(1) : 0;
+function loadData(){
+  fetch(DATA_URL+"?t="+Date.now())
+  .then(r=>r.json())
+  .then(j=>{data=j.sort((a,b)=>a.date.localeCompare(b.date));render();});
+}
 
-  const byWeek = {};
-  data.forEach(r => {
-    const d = new Date(r.date);
-    const week = `${d.getFullYear()}-W${Math.ceil(d.getDate()/7)}`;
-    byWeek[week] = (byWeek[week] || 0) + r.reps;
-  });
-  const weeklyAvg = Object.values(byWeek).length
-    ? (totalReps / Object.values(byWeek).length).toFixed(1)
-    : 0;
+function render(){
+  const totalReps=data.reduce((s,r)=>s+r.reps,0);
+  document.getElementById("workouts").textContent=data.length;
+  document.getElementById("totalReps").textContent=totalReps;
+  document.getElementById("avgSession").textContent=(totalReps/data.length||0).toFixed(1);
+  document.getElementById("bestSession").textContent=Math.max(...data.map(r=>r.reps),0);
 
-  const best = Math.max(...data.map(r => r.reps), 0);
-
-  document.getElementById("workouts").textContent = workouts;
-  document.getElementById("totalReps").textContent = totalReps;
-  document.getElementById("avgSession").textContent = avgSession;
-  document.getElementById("bestSession").textContent = best;
-  document.getElementById("dailyAvg").textContent = dailyAvg;
-  document.getElementById("weeklyAvg").textContent = weeklyAvg;
-
-  const history = document.getElementById("history");
-  history.innerHTML = "";
-  data.slice().reverse().slice(0, 20).forEach(r => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `<strong>${r.reps} Reps</strong><br>${r.date}`;
-    history.appendChild(div);
+  const byDay={},byWeek={},byMonth={};
+  data.forEach(r=>{
+    byDay[r.date]=(byDay[r.date]||0)+r.reps;
+    byWeek[weekKey(r.date)]=(byWeek[weekKey(r.date)]||0)+r.reps;
+    byMonth[monthKey(r.date)]=(byMonth[monthKey(r.date)]||0)+r.reps;
   });
 
-  document.getElementById("status").textContent = `Loaded ${workouts} workouts`;
+  const days=Object.keys(byDay).sort();
+  let streak=0,maxStreak=0;
+  for(let i=0;i<days.length;i++){
+    if(i>0&&new Date(days[i])-new Date(days[i-1])===86400000) streak++;
+    else streak=1;
+    maxStreak=Math.max(maxStreak,streak);
+  }
+
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById("currentStreak").textContent=byDay[today]?streak:0;
+  document.getElementById("longestStreak").textContent=maxStreak;
+
+  document.getElementById("bestDay").textContent=Math.max(...Object.values(byDay));
+  document.getElementById("bestWeek").textContent=Math.max(...Object.values(byWeek));
+
+  const wKeys=Object.keys(byWeek).sort();
+  document.getElementById("thisWeek").textContent=byWeek[wKeys[wKeys.length-1]]||0;
+  document.getElementById("lastWeek").textContent=byWeek[wKeys[wKeys.length-2]]||0;
+
+  const mKeys=Object.keys(byMonth).sort();
+  document.getElementById("thisMonth").textContent=byMonth[mKeys[mKeys.length-1]]||0;
+  document.getElementById("lastMonth").textContent=byMonth[mKeys[mKeys.length-2]]||0;
+
+  drawChart(wKeys.slice(-12).map(k=>byWeek[k]));
+
+  const h=document.getElementById("history");h.innerHTML="";
+  data.slice(-20).reverse().forEach(r=>{
+    h.innerHTML+=`<div class="item"><strong>${r.reps} reps</strong><br>${r.date}</div>`;
+  });
+
+  document.getElementById("status").textContent="Updated";
+}
+
+function drawChart(vals){
+  const c=document.getElementById("trend"),x=c.getContext("2d");
+  x.clearRect(0,0,c.width,c.height);
+  const max=Math.max(...vals,1);
+  vals.forEach((v,i)=>{
+    const px=i*(c.width/(vals.length-1||1));
+    const py=c.height-(v/max)*c.height;
+    if(i===0)x.moveTo(px,py);else x.lineTo(px,py);
+  });
+  x.strokeStyle="#28d17c";x.lineWidth=3;x.stroke();
 }
 
 loadData();
 </script>
-
 </body>
 </html>
